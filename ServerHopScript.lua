@@ -2,22 +2,15 @@
   Made By: Lumpiasallad
 ]]--
 
-
-local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local TweenService = game:GetService("TweenService")
 local MarketplaceService = game:GetService("MarketplaceService")
-local UserInputService = game:GetService("UserInputService")
-
+local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlaceId = game.PlaceId
 local CurrentServerId = game.JobId
-
-local currentSort = "fastest"  -- Options: "fastest", "lowPlayers", "maxPlayers"
-
-
--- Retrieve the Game Name
+local currentSort = "fastest"
 
 local gameName = "Unknown Game"
 pcall(function()
@@ -27,34 +20,27 @@ pcall(function()
     end
 end)
 
--- UI 
-
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AdvancedServerHopGui"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Main UI Frame (semi‑transparent & rounded)
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 400, 0, 500)
--- Start off-screen for the entrance tween (above the view)
 mainFrame.Position = UDim2.new(0.5, -200, -1, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 mainFrame.BackgroundTransparency = 0.3
 mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Selectable = true
 mainFrame.Parent = screenGui
 
--- Use UICorner for a rounded (semicircular) appearance
 local mainFrameCorner = Instance.new("UICorner")
-mainFrameCorner.CornerRadius = UDim.new(0, 50)  -- Adjust for more curvature if desired
+mainFrameCorner.CornerRadius = UDim.new(0, 50)
 mainFrameCorner.Parent = mainFrame
 
-
--- Exit ("X")
-
 local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 70, 0, 30)
--- Position in the upper right inside the main frame
-closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -40, 0, 5)
 closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 closeButton.BackgroundTransparency = 0.2
 closeButton.Text = "X"
@@ -68,20 +54,12 @@ closeButtonCorner.CornerRadius = UDim.new(0, 15)
 closeButtonCorner.Parent = closeButton
 
 closeButton.MouseButton1Click:Connect(function()
-    -- Tween exit: slide upward off-screen and fade to full transparency.
-    local exitTween = TweenService:Create(
-        mainFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-        {Position = UDim2.new(0.5, -200, -1, 0), BackgroundTransparency = 1}
-    )
+    local exitTween = TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -200, -1, 0), BackgroundTransparency = 1})
     exitTween:Play()
     exitTween.Completed:Connect(function()
         screenGui:Destroy()
     end)
 end)
-
-
--- Titel
 
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
@@ -102,12 +80,9 @@ gameNameLabel.TextSize = 20
 gameNameLabel.TextColor3 = Color3.new(0.9, 0.9, 0.9)
 gameNameLabel.Parent = mainFrame
 
-
--- Refresh Button :)
-
 local refreshButton = Instance.new("TextButton")
 refreshButton.Size = UDim2.new(0, 100, 0, 30)
-refreshButton.Position = UDim2.new(1, -110, 0, 5)
+refreshButton.Position = UDim2.new(1, -110, 0, 110)
 refreshButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 refreshButton.BackgroundTransparency = 0
 refreshButton.Text = "Refresh"
@@ -128,8 +103,6 @@ refreshButton.MouseLeave:Connect(function()
     local tween = TweenService:Create(refreshButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 70)})
     tween:Play()
 end)
-
--- the buttons
 
 local filterFrame = Instance.new("Frame")
 filterFrame.Size = UDim2.new(1, 0, 0, 40)
@@ -155,11 +128,9 @@ for i, option in ipairs(sortOptions) do
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Parent = filterFrame
     filterButtons[option.key] = btn
-
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 15)
     btnCorner.Parent = btn
-
     btn.MouseEnter:Connect(function()
         local tween = TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 120, 120)})
         tween:Play()
@@ -169,7 +140,6 @@ for i, option in ipairs(sortOptions) do
         local tween = TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = newColor})
         tween:Play()
     end)
-    
     btn.MouseButton1Click:Connect(function()
         currentSort = option.key
         for key, button in pairs(filterButtons) do
@@ -177,12 +147,10 @@ for i, option in ipairs(sortOptions) do
             local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = newColor})
             tween:Play()
         end
-        loadServerList()  -- Refresh the list with the new sort order.
+        loadServerList()
     end)
 end
 
-
--- the pulsing anim
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -20, 0, 30)
 statusLabel.Position = UDim2.new(0, 10, 0, 115)
@@ -193,15 +161,8 @@ statusLabel.TextSize = 20
 statusLabel.TextColor3 = Color3.new(1, 1, 1)
 statusLabel.Parent = mainFrame
 
-local statusTween = TweenService:Create(
-    statusLabel, 
-    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, -1, true),
-    {TextTransparency = 0.5}
-)
+local statusTween = TweenService:Create(statusLabel, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, -1, true), {TextTransparency = 0.5})
 statusTween:Play()
-
-
--- Scrolling for Server List
 
 local serverListFrame = Instance.new("ScrollingFrame")
 serverListFrame.Size = UDim2.new(1, -20, 1, -170)
@@ -218,57 +179,14 @@ listLayout.Parent = serverListFrame
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 listLayout.Padding = UDim.new(0, 5)
 
-
--- Draggable UI
-
-local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
-
-local function update(input)
-    local delta = input.Position - dragStart
-    mainFrame.Position = UDim2.new(
-        mainFrame.Position.X.Scale,
-        startPos.X.Offset + delta.X,
-        mainFrame.Position.Y.Scale,
-        startPos.Y.Offset + delta.Y
-    )
-end
-
-mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input == dragInput then
-        update(input)
-    end
-end)
-
--- Functions: Fetch, Sort & Render Server List
+local drag = loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Drag-UI-SUPPORTS-MOBILE-22790"))()
+drag(mainFrame)
 
 local function fetchServers(callback, cursor)
-    local baseUrl = string.format(
-        "https://games.roblox.com/v1/games/%d/servers/Public?limit=100&excludeFullGames=true",
-        PlaceId
-    )
+    local baseUrl = string.format("https://games.roblox.com/v1/games/%d/servers/Public?limit=100&excludeFullGames=true", PlaceId)
     if cursor and cursor ~= "" then
         baseUrl = baseUrl .. "&cursor=" .. cursor
     end
-
     local success, result = pcall(function()
         return HttpService:JSONDecode(game:HttpGet(baseUrl))
     end)
@@ -303,19 +221,16 @@ local function renderServerList(servers)
             child:Destroy()
         end
     end
-
     for i, server in ipairs(servers) do
         local entry = Instance.new("Frame")
         entry.Size = UDim2.new(1, -10, 0, 40)
         entry.BackgroundColor3 = (i % 2 == 0) and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(60, 60, 60)
         entry.BorderSizePixel = 0
         entry.Parent = serverListFrame
-
         local entryLayout = Instance.new("UIListLayout", entry)
         entryLayout.FillDirection = Enum.FillDirection.Horizontal
         entryLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
         entryLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
         local indexLabel = Instance.new("TextLabel")
         indexLabel.Size = UDim2.new(0, 40, 1, 0)
         indexLabel.BackgroundTransparency = 1
@@ -324,7 +239,6 @@ local function renderServerList(servers)
         indexLabel.TextSize = 18
         indexLabel.TextColor3 = Color3.new(1, 1, 1)
         indexLabel.Parent = entry
-
         local playersLabel = Instance.new("TextLabel")
         playersLabel.Size = UDim2.new(0, 80, 1, 0)
         playersLabel.BackgroundTransparency = 1
@@ -333,7 +247,6 @@ local function renderServerList(servers)
         playersLabel.TextSize = 18
         playersLabel.TextColor3 = Color3.new(1, 1, 1)
         playersLabel.Parent = entry
-
         local pingLabel = Instance.new("TextLabel")
         pingLabel.Size = UDim2.new(0, 80, 1, 0)
         pingLabel.BackgroundTransparency = 1
@@ -342,7 +255,6 @@ local function renderServerList(servers)
         pingLabel.TextSize = 18
         pingLabel.TextColor3 = Color3.new(1, 1, 1)
         pingLabel.Parent = entry
-
         local regionLabel = Instance.new("TextLabel")
         regionLabel.Size = UDim2.new(0, 100, 1, 0)
         regionLabel.BackgroundTransparency = 1
@@ -351,7 +263,6 @@ local function renderServerList(servers)
         regionLabel.TextSize = 18
         regionLabel.TextColor3 = Color3.new(1, 1, 1)
         regionLabel.Parent = entry
-
         local joinButton = Instance.new("TextButton")
         joinButton.Size = UDim2.new(0, 80, 1, 0)
         joinButton.BackgroundColor3 = Color3.fromRGB(80, 200, 80)
@@ -360,11 +271,9 @@ local function renderServerList(servers)
         joinButton.TextSize = 18
         joinButton.TextColor3 = Color3.new(1, 1, 1)
         joinButton.Parent = entry
-
         local joinButtonCorner = Instance.new("UICorner")
         joinButtonCorner.CornerRadius = UDim.new(0, 10)
         joinButtonCorner.Parent = joinButton
-
         if server.id == CurrentServerId then
             joinButton.Text = "Current"
             joinButton.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
@@ -379,7 +288,6 @@ local function renderServerList(servers)
             end)
         end
     end
-
     local contentHeight = (#servers) * 45
     serverListFrame.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
     statusLabel.Text = "Loaded " .. tostring(#servers) .. " servers."
@@ -397,20 +305,11 @@ function loadServerList()
     end, "")
 end
 
-
--- Button 
 refreshButton.MouseButton1Click:Connect(function()
     loadServerList()
 end)
 
-
--- UIAnim
-
-local entranceTween = TweenService:Create(
-    mainFrame, 
-    TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-    {Position = UDim2.new(0.5, -200, 0.5, -250)}
-)
+local entranceTween = TweenService:Create(mainFrame, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -200, 0.5, -250)})
 entranceTween:Play()
 
 loadServerList()
