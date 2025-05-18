@@ -179,7 +179,7 @@ listLayout.Parent = serverListFrame
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 listLayout.Padding = UDim.new(0, 5)
 
-local drag = loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Drag-UI-SUPPORTS-MOBILE-22790"))()
+local drag = loadstring(game:HttpGet("https://raw.githubusercontent.com/lumpiasallad/MobileSuport_Drag_UI_Script-/refs/heads/main/Drag_UI_Mobile.lua"))()
 drag(mainFrame)
 
 local function fetchServers(callback, cursor)
