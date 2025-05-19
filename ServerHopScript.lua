@@ -258,7 +258,7 @@ local function renderServerList(servers)
         local regionLabel = Instance.new("TextLabel")
         regionLabel.Size = UDim2.new(0, 100, 1, 0)
         regionLabel.BackgroundTransparency = 1
-        regionLabel.Text = "Region: " .. tostring(server.location or "Unknown")
+        regionLabel.Text = "Region: " .. tostring(server.location or "Unknown") -- I wanted to implement a region system where this script would locate what region the server is at. I could but its too hard and i gave up 
         regionLabel.Font = Enum.Font.SourceSans
         regionLabel.TextSize = 18
         regionLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -317,6 +317,6 @@ loadServerList()
 --intro 
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Server Hop",
-    Text = "Made by: Lumpiasallad",
+    Text = " Made by:Lumpiasallad",
     Duration = 5
 })
